@@ -4,8 +4,10 @@ const { ENDPOINT } = process.env;
 
 const getDogs = async (req, res) => {
   try {
-    const dogs = await Dog.findAll({ include: { model: Temperament } });
-    return res.status(200).json(dogs);
+    const dogsDb = await Dog.findAll({ include: { model: Temperament } });
+    const dogsApi = await axios(ENDPOINT);
+    const allDogs = [...dogsApi.data, ...dogsDb];
+    return res.status(200).json({ dogs: allDogs });
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
