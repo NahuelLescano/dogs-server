@@ -6,7 +6,13 @@ const getAllDogs = async (req, res) => {
   try {
     const dogsDb = await Dog.findAll({ include: { model: Temperament } });
     const dogsApi = await axios(ENDPOINT);
-    const allDogs = [...dogsApi.data, ...dogsDb];
+    const allDogs = [
+      ...dogsApi.data.map((dog) => ({
+        ...dog,
+        image: dog.image.url,
+      })),
+      ...dogsDb,
+    ];
     return res.status(200).json(allDogs);
   } catch ({ message }) {
     return res.status(500).json({ message });
@@ -81,6 +87,7 @@ const postDogs = async (req, res) => {
       !life_span ||
       life_span.length === 0 ||
       !image ||
+      image.length === 0 ||
       !temperament
     ) {
       return res.status(500).json({ message: 'Missing data' });
