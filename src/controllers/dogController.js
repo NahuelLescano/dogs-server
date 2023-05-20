@@ -2,12 +2,12 @@ const { Dog, Temperament, Op } = require('../db');
 const axios = require('axios');
 const { ENDPOINT } = process.env;
 
-const getDogs = async (req, res) => {
+const getAllDogs = async (req, res) => {
   try {
     const dogsDb = await Dog.findAll({ include: { model: Temperament } });
     const dogsApi = await axios(ENDPOINT);
     const allDogs = [...dogsApi.data, ...dogsDb];
-    return res.status(200).json({ dogs: allDogs });
+    return res.status(200).json(allDogs);
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
@@ -27,15 +27,16 @@ const getDogsByIdBreed = async (req, res) => {
     }
 
     // request to API
-    const { data } = await axios(`${ENDPOINT}${id}`);
+    const { data } = await axios.get(ENDPOINT);
 
     const dogs = [];
     if (data) {
-      dogs.push(data);
+      const dogId = data.filter((dog) => dog.id == id);
+      dogs.push(dogId);
     }
 
     if (dogs.length === 0) {
-      return res.status(404).json({ message: 'Breed dog not found' });
+      return res.status(404).json({ message: 'Dog not found' });
     }
     return res.status(200).json(dogs);
   } catch ({ message }) {
@@ -110,7 +111,7 @@ const postDogs = async (req, res) => {
 };
 
 module.exports = {
-  getDogs,
+  getAllDogs,
   getDogsByIdBreed,
   getDogsByName,
   postDogs,
