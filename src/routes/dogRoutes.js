@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const {
-  getDogs,
+  getAllDogs,
   getDogsByIdBreed,
   getDogsByName,
   postDogs,
@@ -8,7 +8,7 @@ const {
 
 const router = Router();
 
-router.get('/', getDogs);
+router.get('/', getAllDogs);
 router.get('/id/:id', getDogsByIdBreed);
 router.get('/name', getDogsByName);
 router.post('/', postDogs);
