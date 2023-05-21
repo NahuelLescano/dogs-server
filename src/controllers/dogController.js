@@ -35,16 +35,16 @@ const getDogsByIdBreed = async (req, res) => {
     // request to API
     const { data } = await axios.get(ENDPOINT);
 
-    const dogs = [];
-    if (data) {
-      const dogId = data.filter((dog) => dog.id == id);
-      dogs.push(dogId);
-    }
+    let dogId = data && data.filter((dog) => dog.id == id);
+    dogId = {
+      ...dogId[0],
+      image: dogId[0].image.url,
+    };
 
-    if (dogs.length === 0) {
+    if (!dogId) {
       return res.status(404).json({ message: 'Dog not found' });
     }
-    return res.status(200).json(dogs);
+    return res.status(200).json(dogId);
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
