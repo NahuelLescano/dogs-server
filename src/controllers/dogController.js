@@ -42,7 +42,7 @@ const getDogsByIdBreed = async (req, res) => {
     };
 
     if (!dogId) {
-      return res.status(404).json({ message: 'Dog not found' });
+      return res.status(404).json({ message: 'Perro no encontrado.' });
     }
     return res.status(200).json(dogId);
   } catch ({ message }) {
@@ -54,7 +54,7 @@ const getDogsByName = async (req, res) => {
   try {
     const { name } = req.query;
     if (!name || name.length === 0) {
-      return res.status(400).json({ message: 'Must introduce a valid name' });
+      return res.status(400).json({ message: 'Introduzca un nombre válido.' });
     }
     const dogApi = await axios(`${ENDPOINT}search?q=${name}`);
     const dogApiFound = dogApi.data.filter(
@@ -90,28 +90,28 @@ const postDogs = async (req, res) => {
       image.length === 0 ||
       !temperament
     ) {
-      return res.status(500).json({ message: 'Missing data' });
+      return res.status(500).json({ message: 'Faltan datos' });
     }
     const dogExisting = await Dog.findOne({
       where: { name },
     });
     if (dogExisting) {
-      return res.status(500).json({ message: 'Dog already exists.' });
+      return res.status(500).json({ message: 'El perro ya existe.' });
     }
 
     const temperamentExisting = await Temperament.findByPk(temperament);
     if (!temperamentExisting) {
-      return res.status(500).json({ message: 'Temperament do not exist' });
+      return res.status(500).json({ message: 'El temperamento no existe' });
     }
     const dogCreated = await Dog.create({
-      image,
+      image: image.url,
       name,
       height,
       weight,
       life_span,
     });
     dogCreated.addTemperaments(temperament);
-    return res.status(201).json({ message: 'Dog was added successfully' });
+    return res.status(201).json({ message: 'El perro fue creado exitosamente' });
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
