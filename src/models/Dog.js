@@ -13,8 +13,7 @@ module.exports = (sequelize) => {
       },
       image: {
         type: DataTypes.STRING,
-        defaultValue:
-          'http://78.media.tumblr.com/2bc94b9eec2d00f5d28110ba191da896/tumblr_nyled8DYKd1qg9kado1_1280.jpg"',
+        defaultValue: 'https://cdn2.thedogapi.com/images/rkiByec47.jpg',
         validate: {
           isUrl: true,
         },
