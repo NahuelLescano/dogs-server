@@ -7,10 +7,14 @@ const getAllDogs = async (req, res) => {
     const dogsDb = await Dog.findAll({ include: { model: Temperament } });
     const dogsApi = await axios(ENDPOINT);
     const allDogs = [
-      ...dogsApi.data.map((dog) => ({
-        ...dog,
-        image: dog.image.url,
-      })),
+      ...dogsApi.data.map((dog) => {
+        const temper = dog.temperament ? dog.temperament.split(', ') : [];
+        return {
+          ...dog,
+          image: dog.image.url,
+          temperament: temper,
+        };
+      }),
       ...dogsDb,
     ];
     return res.status(200).json(allDogs);
@@ -111,7 +115,9 @@ const postDogs = async (req, res) => {
       life_span,
     });
     dogCreated.addTemperaments(temperament);
-    return res.status(201).json({ message: 'El perro fue creado exitosamente' });
+    return res
+      .status(201)
+      .json({ message: 'El perro fue creado exitosamente' });
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
