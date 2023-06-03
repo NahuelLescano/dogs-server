@@ -82,7 +82,7 @@ const getDogsByName = async (req, res) => {
 
 const postDogs = async (req, res) => {
   try {
-    const { weight, height, name, life_span, image, temperament } = req.body;
+    const { weight, height, name, life_span, image, temperaments } = req.body;
     if (
       !weight ||
       !height ||
@@ -91,8 +91,7 @@ const postDogs = async (req, res) => {
       !life_span ||
       life_span.length === 0 ||
       !image ||
-      image.length === 0 ||
-      !temperament
+      image.length === 0
     ) {
       return res.status(500).json({ message: 'Faltan datos' });
     }
@@ -103,7 +102,9 @@ const postDogs = async (req, res) => {
       return res.status(500).json({ message: 'El perro ya existe.' });
     }
 
-    const temperamentExisting = await Temperament.findByPk(temperament);
+    const temperamentExisting = await Temperament.findByPk(
+      temperaments.map((temp) => temp)
+    );
     if (!temperamentExisting) {
       return res.status(500).json({ message: 'El temperamento no existe' });
     }
@@ -114,7 +115,7 @@ const postDogs = async (req, res) => {
       weight,
       life_span,
     });
-    dogCreated.addTemperaments(temperament);
+    dogCreated.addTemperaments(temperaments.map((temp) => temp));
     return res
       .status(201)
       .json({ message: 'El perro fue creado exitosamente' });
