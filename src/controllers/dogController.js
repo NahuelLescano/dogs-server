@@ -46,7 +46,7 @@ const getDogsByIdBreed = async (req, res) => {
     };
 
     if (!dogId) {
-      return res.status(404).json({ message: 'Perro no encontrado.' });
+      return res.status(404).json({ message: 'Dog not found.' });
     }
     return res.status(200).json(dogId);
   } catch ({ message }) {
@@ -58,7 +58,7 @@ const getDogsByName = async (req, res) => {
   try {
     const { name } = req.query;
     if (!name || name.length === 0) {
-      return res.status(400).json({ message: 'Introduzca un nombre válido.' });
+      return res.status(400).json({ message: 'Write a valid name.' });
     }
     const dogApi = await axios(`${ENDPOINT}search?q=${name}`);
     const dogApiFound = dogApi.data.filter(
@@ -82,7 +82,7 @@ const getDogsByName = async (req, res) => {
 
 const postDogs = async (req, res) => {
   try {
-    const { weight, height, name, life_span, image, temperaments } = req.body;
+    const { weight, height, name, life_span, image, temperament } = req.body;
     if (
       !weight ||
       !height ||
@@ -93,21 +93,15 @@ const postDogs = async (req, res) => {
       !image ||
       image.length === 0
     ) {
-      return res.status(500).json({ message: 'Faltan datos' });
+      return res.status(500).json({ message: 'Missing data.' });
     }
     const dogExisting = await Dog.findOne({
       where: { name },
     });
     if (dogExisting) {
-      return res.status(500).json({ message: 'El perro ya existe.' });
+      return res.status(500).json({ message: 'Dog already exists.' });
     }
 
-    const temperamentExisting = await Temperament.findByPk(
-      temperaments.map((temp) => temp)
-    );
-    if (!temperamentExisting) {
-      return res.status(500).json({ message: 'El temperamento no existe' });
-    }
     const dogCreated = await Dog.create({
       image: image.url,
       name,
@@ -115,10 +109,17 @@ const postDogs = async (req, res) => {
       weight,
       life_span,
     });
-    dogCreated.addTemperaments(temperaments.map((temp) => temp));
-    return res
-      .status(201)
-      .json({ message: 'El perro fue creado exitosamente' });
+    if (temperament.length > 1) {
+      const temperPromise = temperament.map(async (temp) => {
+        await Temperament.findByPk(temp);
+        await dogCreated.addTemperaments(temp);
+      });
+
+      await Promise.all(temperPromise).catch((error) =>
+        res.status(500).json({ message: error.message })
+      );
+    }
+    return res.status(201).json({ message: 'Dog was successfully created.' });
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
