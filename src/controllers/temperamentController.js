@@ -27,10 +27,12 @@ const postTemperaments = async (req, res) => {
         .json({ message: 'Temperament was already created' });
     }
 
-    const temperamentCreated = await Temperament.create({
+    await Temperament.create({
       name,
     });
-    return res.status(201).json({ success: true, temperamentCreated });
+    return res
+      .status(201)
+      .json({ message: 'Temperament was successfully created.' });
   } catch ({ message }) {
     return res.status(500).json({ message });
   }
