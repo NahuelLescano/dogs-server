@@ -32,8 +32,7 @@ const getDogsByIdBreed = async (req, res) => {
         include: [{ model: Temperament }],
         where: { id },
       });
-
-      return res.status(200).json(dogsDb);
+      return res.status(200).json(dogsDb[0]);
     }
 
     // request to API
