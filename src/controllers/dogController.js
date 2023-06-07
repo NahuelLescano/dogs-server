@@ -81,7 +81,8 @@ const getDogsByName = async (req, res) => {
 
 const postDogs = async (req, res) => {
   try {
-    const { weight, height, name, life_span, image, temperament } = req.body;
+    const { weight, height, name, life_span, image, temperaments } = req.body;
+    console.log(req.body);
     if (
       !weight ||
       !height ||
@@ -108,8 +109,8 @@ const postDogs = async (req, res) => {
       weight,
       life_span,
     });
-    if (temperament.length > 1) {
-      const temperPromise = temperament.map(async (temp) => {
+    if (temperaments.length > 1) {
+      const temperPromise = temperaments.map(async (temp) => {
         await Temperament.findByPk(temp);
         await dogCreated.addTemperaments(temp);
       });
