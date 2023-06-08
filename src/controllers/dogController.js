@@ -82,7 +82,6 @@ const getDogsByName = async (req, res) => {
 const postDogs = async (req, res) => {
   try {
     const { weight, height, name, life_span, image, temperaments } = req.body;
-    console.log(req.body);
     if (
       !weight ||
       !height ||
