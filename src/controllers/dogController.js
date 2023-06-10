@@ -4,8 +4,9 @@ const { ENDPOINT } = process.env;
 
 const getAllDogs = async (req, res) => {
   try {
-    const dogsDb = await Dog.findAll({ include: { model: Temperament } });
-    const dogsApi = await axios(ENDPOINT);
+    const dogsDb = await Dog.findAll({
+      include: { model: Temperament, through: {} },
+    });
     const allDogs = [
       ...dogsApi.data.map((dog) => {
         const temper = dog.temperament ? dog.temperament.split(', ') : [];
@@ -65,6 +66,7 @@ const getDogsByName = async (req, res) => {
     );
 
     const dogDb = await Dog.findOne({
+      include: { model: Temperament, through: {} },
       where: {
         name: {
           [Op.iLike]: `%${name}%`,
@@ -73,7 +75,7 @@ const getDogsByName = async (req, res) => {
     });
 
     const allDogs = [...dogApiFound, ...[dogDb]];
-    return res.status(200).json({ allDogs });
+    return res.status(200).json(allDogs);
   } catch ({ message }) {
     return res.status(500).json(message);
   }
@@ -81,43 +83,58 @@ const getDogsByName = async (req, res) => {
 
 const postDogs = async (req, res) => {
   try {
-    const { weight, height, name, life_span, image, temperaments } = req.body;
+    const { weight, height, name, life_span, image, temperament } = req.body;
     if (
       !weight ||
       !height ||
       !name ||
-      name.length === 0 ||
       !life_span ||
-      life_span.length === 0 ||
       !image ||
-      image.length === 0
+      !temperament ||
+      temperament.length === 0
     ) {
-      return res.status(500).json({ message: 'Missing data.' });
+      return res.status(400).json({ message: 'Missing data.' });
+    }
+
+    if (temperament.length < 2) {
+      return res
+        .status(400)
+        .json({ message: 'Add at least two temperaments.' });
+    }
+
+    const setTemp = new Set(temperament);
+    if (setTemp.size !== temperament.length) {
+      return res
+        .status(400)
+        .json({ message: 'Each temperament must be different.' });
     }
     const dogExisting = await Dog.findOne({
       where: { name },
     });
     if (dogExisting) {
-      return res.status(500).json({ message: 'Dog already exists.' });
+      return res.status(400).json({ message: 'Dog already exists.' });
+    }
+
+    const existingTemperament = await Temperament.findAll({
+      where: { name: temperament },
+    });
+
+    if (!existingTemperament) {
+      return res
+        .status(500)
+        .json({ message: 'Temperament does not exist in the database.' });
     }
 
     const dogCreated = await Dog.create({
-      image: image.url,
+      image,
       name,
       height,
       weight,
       life_span,
     });
-    if (temperaments.length > 1) {
-      const temperPromise = temperaments.map(async (temp) => {
-        await Temperament.findByPk(temp);
-        await dogCreated.addTemperaments(temp);
-      });
 
-      await Promise.all(temperPromise).catch((error) =>
-        res.status(500).json({ message: error.message })
-      );
-    }
+    await dogCreated.addTemperaments(existingTemperament);
+
     return res.status(201).json({ message: 'Dog was successfully created.' });
   } catch ({ message }) {
     return res.status(500).json({ message });
