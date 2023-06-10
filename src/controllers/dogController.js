@@ -7,6 +7,7 @@ const getAllDogs = async (req, res) => {
     const dogsDb = await Dog.findAll({
       include: { model: Temperament, through: {} },
     });
+    const dogsApi = await axios.get(ENDPOINT);
     const allDogs = [
       ...dogsApi.data.map((dog) => {
         const temper = dog.temperament ? dog.temperament.split(', ') : [];
