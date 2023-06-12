@@ -11,34 +11,7 @@ const getAllTemperaments = async (req, res) => {
   }
 };
 
-const postTemperaments = async (req, res) => {
-  try {
-    const { name } = req.body;
-    if (!name || name.length === 0) {
-      return res.status(500).json({ message: 'name is invalid' });
-    }
-
-    const existingTemperament = await Temperament.findOne({
-      where: { name },
-    });
-    if (existingTemperament) {
-      return res
-        .status(500)
-        .json({ message: 'Temperament was already created' });
-    }
-
-    await Temperament.create({
-      name,
-    });
-    return res
-      .status(201)
-      .json({ message: 'Temperament was successfully created.' });
-  } catch ({ message }) {
-    return res.status(500).json({ message });
-  }
-};
-
-const getTemperaments = async (req, res) => {
+const getTemperaments = async () => {
   try {
     const { data } = await axios(ENDPOINT);
     const dogs = data
@@ -48,17 +21,13 @@ const getTemperaments = async (req, res) => {
       .map((temperament) => temperament.trim())
       .filter((temperament) => temperament.length > 1);
     const temperament = [...new Set(dogs)];
-    const temp = await Temperament.bulkCreate(
-      temperament.map((temp) => ({ name: temp }))
-    );
-    return res.status(200).json(temp);
+    await Temperament.bulkCreate(temperament.map((temp) => ({ name: temp })));
   } catch ({ message }) {
-    return res.status(500).json({ message });
+    console.log(message);
   }
 };
 
 module.exports = {
-  getAllTemperaments,
-  postTemperaments,
   getTemperaments,
+  getAllTemperaments,
 };
